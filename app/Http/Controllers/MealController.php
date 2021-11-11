@@ -18,11 +18,24 @@ class MealController extends Controller
         $sum_count = Meals::sum('count');
         $sum_budget = Meals::sum('budget');
         $mealData = Meals::simplepaginate(5);
+        $monthly = Meals::whereMonth('created_at', '=' ,11);
+        $previous_week = strtotime("-1 week +1 day");
+        $start_week = strtotime("last sunday midnight",$previous_week);
+        $end_week = strtotime("next saturday",$start_week);
+        $start_week = date("Y-m-d",$start_week);
+        $end_week = date("Y-m-d",$end_week);
 
+        $weekly=Meals::whereBetween('created_at', [$start_week, $end_week])->get(['type', 'count', 'budget','created_at']);
+        $weekly_count=$weekly->sum('count');
+        $weekly_budget=$weekly->sum('budget');
         return view('index', [
             'mealData' => $mealData,
             'sum_count'=>$sum_count,
-            'sum_budget'=>$sum_budget
+            'sum_budget'=>$sum_budget,
+            'monthly'=>$monthly,
+            'weekly'=>$weekly,
+            'weekly_count'=>$weekly_count,
+            'weekly_budget'=>$weekly_budget
     ]);
     }
 
@@ -64,9 +77,6 @@ class MealController extends Controller
     {
         $showMeal = Meals::simplepaginate(5);
 
-        $monthly = Meals::whereMonth('created_at', '=' ,11);
-        dd($monthly);
-        return view('show_meal', ['showMeal' => $showMeal, 'monthly'=>$monthly]);
     }
 
     /**
